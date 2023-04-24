@@ -31,7 +31,7 @@ def get_recommendations(user_age, user_gender):
 
     ratings = data.pivot(index='user_id', columns=('item_id'), values='rating')
 
-    data = pd.read_csv("/home/rajeshv4u/Documents/movie_rec/ml-1m/users.dat", sep="::", engine="python",
+    data = pd.read_csv("ml-1m/users.dat", sep="::", engine="python",
                     names=["user_id", "gender", "age", "occupation_id", "time_stamp"])
 
     # select columns of interest

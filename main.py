@@ -1,11 +1,12 @@
 import streamlit as st
-from initial_recommendation import *
+import pandas as pd
+import numpy as np
+from initial_recommendation import get_recommendations
 from page_manager import get, set, store, get_user, store_ratings, get_ratings, store_topmovies, get_topmovies
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import pandas as pd
 from final_movie_recommendations import matrix_factorization
 
 
@@ -151,6 +152,11 @@ elif (pg==3):
     final_df = final_df.sort_values(by=1, ascending=False)
 
     top_5 = final_df.head(5)[2].values.tolist()
+    top_5_ratings = final_df.head(5)[1].values.tolist()
+    top_5_ratings_ = []
+    for i in top_5_ratings:
+        for j in i:
+            top_5_ratings_.append(j)
 
     #Loading data for matching movie names
     movies_file = 'ml-1m/movies.dat'
@@ -172,17 +178,23 @@ elif (pg==3):
 
     # final_input_movies = movies[movies['movie_id'].isin(final_recommendation.astype(str))]['title'].values.tolist()
     USER_MOVIES = []
+    USER_MOVIES_ = []
 
-    for i in top_5:
-        USER_MOVIES.append(movies.loc[str(i)]['title'])
+    for i in range(len(top_5)):
+        USER_MOVIES.append([movies.loc[str(top_5[i])]['title'], top_5_ratings_[i]])
+        USER_MOVIES_.append(movies.loc[str(top_5[i])]['title'])
+    
+    USER_MOVIES = pd.DataFrame(USER_MOVIES, columns=['Movie', 'Rating'], index = [1,2,3,4,5])
 
     st.title("Your Recommendations")
     st.write("Here are the top 5 movies we recommend you to watch")
-    for i in USER_MOVIES:
-        st.write(f"***{i}***")
+    # for i,j in USER_MOVIES:
+    #     st.write(f"***{i}***  :  {j}")
+
+    st.table(USER_MOVIES)
 
 
-    store_topmovies(top_5, USER_MOVIES)
+    store_topmovies(top_5, USER_MOVIES_)
 
     set(4)
     # Reevaluate the dataset by taking the feedback ratings from the user
@@ -224,11 +236,14 @@ elif (pg==4):
                 available_ratings.append(a)
             except:
                 available_ratings.append(np.nan)
-        set(1)
-        matrix_factorization(available_ratings)
         
-        if st.button("Return to Main Page"):
-            pass
+        matrix_factorization(available_ratings)
+        set(3)
+        if st.button("Return to Main Page",key = 2):
+            set(1)
+
+        if st.button("Show Recommendations",key = 3):
+            set(3)
         
 
         
